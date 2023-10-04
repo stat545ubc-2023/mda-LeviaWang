@@ -1,6 +1,6 @@
 ---
 title: "Mini Data-Analysis Deliverable 1"
-output: html_document
+output: github_document
 ---
 
 # Welcome to your (maybe) first-ever data analysis project!
@@ -84,10 +84,10 @@ And that is exactly the first thing that you will do!
 
 <!-------------------------- Start your work below ---------------------------->
 
-1: CHOICE_1\_HERE\
-2: CHOICE_2\_HERE\
-3: CHOICE_3\_HERE\
-4: CHOICE_4\_HERE
+1: flow_sample
+2: parking_meters
+3: steam_games
+4: vancouver_trees
 
 <!----------------------------------------------------------------------------->
 
@@ -96,24 +96,54 @@ And that is exactly the first thing that you will do!
 *Hint:* This is one of those times when you should think about the cleanliness of your analysis. I added a single code chunk for you below, but do you want to use more than one? Would you like to write more comments outside of the code chunk?
 
 <!-------------------------- Start your work below ---------------------------->
-
+### flow_sample:
+* **Number of rows and columns (size):** 218 rows and 7 columns.
+* **variables:** dbl and chr.
+* **class type:** tibble.
 ```{r}
 ### EXPLORE HERE ###
-steam_games
+glimpse(flow_sample)
+class(flow_sample)
 ```
-
+### parking_meters:
+* **Number of rows and columns (size):** 10032 rows and 22 columns.
+* **variables:** most var are chr, others are db1.
+* **class type:** tibble.
+```{r}
+### EXPLORE HERE ###
+glimpse(parking_meters)
+class(parking_meters)
+```
+### steam_game:
+* **Number of rows and columns (size):** 40833 rows and 21 columns.
+* **variables:** chr and dbl.
+* **class type:** tibble.
+```{r}
+### EXPLORE HERE ###
+glimpse(steam_games)
+class(steam_games)
+```
+### vancouver_trees:
+* **Number of rows and columns (size):** 146611 rows and 20 columns.
+* **variables:** dbl and chr.
+* **class type:** tibble.
+```{r}
+### EXPLORE HERE ###
+glimpse(vancouver_trees)
+class(vancouver_trees)
+```
 <!----------------------------------------------------------------------------->
 
 1.3 **(1 point)** Now that you've explored the 4 datasets that you were initially most interested in, let's narrow it down to 1. What lead you to choose this one? Briefly explain your choice below.
 
 <!-------------------------- Start your work below ---------------------------->
-
+**I prefer to choose steam_games because it has both a price column and a discount column. I believe there are other columns that can influence the price and discount.** 
 <!----------------------------------------------------------------------------->
 
 1.4 **(2 points)** Time for a  final decision! Going back to the beginning, it's important to have an *end goal* in mind. For example, if I had chosen the `titanic` dataset for my project, I might've wanted to explore the relationship between survival and other variables. Try to think of 1 research question that you would want to answer with your dataset. Note it down below.
 
 <!-------------------------- Start your work below ---------------------------->
-
+**The final decision is steam_games I want to explore the relationship between price and other variables.**
 <!----------------------------------------------------------------------------->
 
 # Important note
@@ -142,7 +172,60 @@ Make sure that you're using dplyr and ggplot2 rather than base R for this task. 
 2.2 **(4 points)** For each of the 4 exercises that you complete, provide a *brief explanation* of why you chose that exercise in relation to your data (in other words, why does it make sense to do that?), and sufficient comments for a reader to understand your reasoning and code.
 
 <!-------------------------- Start your work below ---------------------------->
+```{r}
+library(ggplot2)
+library(dplyr)
+summary(steam_games$original_price)
 
+```
+
+### 1. Plot the distribution of a numeric variable.
+```{r}
+#The reason why I choose to draw a histogram of original_price is I want to check the distribution of original_price.
+#Since the max value of original_price is very high, so I have to remove the extreme high value.
+ggplot(subset(steam_games, original_price <= 100), aes(x = original_price)) +
+  geom_histogram(binwidth = 0.5, fill = "blue", color = "black", alpha = 0.7) +
+  labs(title = "Distribution of original_price in Steam Games (original_price <= 10)",
+       x = "original_price",
+       y = "Number of Games") +
+  theme_minimal()
+
+```
+### 2.  Create a new variable based on other variables in your data (only if it makes sense)
+```{r}
+#I create a new variable price_difference, it is the difference between orginal_price and discount_price. We can use this variable to caluculate discount.
+steam_games_new <- steam_games %>%
+  mutate(price_difference = original_price - discount_price)
+glimpse(steam_games_new)
+```
+### 3.  Investigate how many missing values there are per variable. Can you find a way to plot this?
+```{r}
+#If I want to find the relationship between price and other vars or relationship between price_difference and other vars, I must find the missing value in these columns to see if I need to tidy the dataset.
+missing_data <- steam_games %>%
+  summarise_all(~sum(is.na(.))) %>%
+  gather(variable, missing_count)
+
+library(ggplot2)
+
+ggplot(missing_data, aes(x = variable, y = missing_count)) +
+  geom_bar(stat = "identity", fill = "blue", color = "black", alpha = 0.7) +
+  coord_flip() + 
+  labs(title = "Number of Missing Values per Variable",
+       x = "Variable",
+       y = "Number of Missing Values") +
+  theme_minimal()
+#We can see that there are so many missing value in discount_price, not many in original_price.
+
+```
+### 7.  Make a new tibble with a subset of your data, with variables and observations that you are interested in exploring.
+```{r}
+#I want to create a new tibble only contains some variables that I think are highly relate to three price(original_price, discount_price,price_difference)
+selected_data <- steam_games_new %>%
+  select(original_price, discount_price, price_difference, release_date, 
+         developer, languages, achievements, genre, types, recent_reviews)
+
+head(selected_data)
+```
 <!----------------------------------------------------------------------------->
 
 # Task 3: Choose research questions 
@@ -150,6 +233,13 @@ Make sure that you're using dplyr and ggplot2 rather than base R for this task. 
 **(4 points)** So far, you have chosen a dataset and gotten familiar with it through exploring the data. You have also brainstormed one research question that interested you (Task 1.4).  Now it's time to pick 4 research questions that you would like to explore in Milestone 2! Write the 4 questions and any additional comments below. 
 
 <!--- *****START HERE***** --->
+**Research Question 1: **How does the original_price of games vary with their release_date and game types? Specifically, is there a trend in the pricing of games over time, and do different game types exhibit distinct pricing patterns?
+
+**Research Question 2: **Is the presence or absence of a discount associated with the release_date of games? 
+
+**Research Question 3: **Is the magnitude of the price_difference between the original and discounted prices correlated with the original_price of games? 
+
+**Research Question 4: **Is there a relationship between the genre of games and their release_date? 
 
 <!----------------------------->
 
