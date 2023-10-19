@@ -1,0 +1,497 @@
+---
+title: "Mini Data Analysis Milestone 2"
+output: html_document
+---
+
+*To complete this milestone, you can either edit [this `.rmd` file](https://raw.githubusercontent.com/UBC-STAT/stat545.stat.ubc.ca/master/content/mini-project/mini-project-2.Rmd) directly. Fill in the sections that are commented out with `<!--- start your work here--->`. When you are done, make sure to knit to an `.md` file by changing the output in the YAML header to `github_document`, before submitting a tagged release on canvas.*
+
+# Welcome to the rest of your mini data analysis project!
+
+In Milestone 1, you explored your data. and came up with research questions. This time, we will finish up our mini data analysis and obtain results for your data by: 
+
+- Making summary tables and graphs 
+- Manipulating special data types in R: factors and/or dates and times.
+-   Fitting a model object to your data, and extract a result.
+-   Reading and writing data as separate files.
+
+We will also explore more in depth the concept of *tidy data.* 
+
+**NOTE**: The main purpose of the mini data analysis is to integrate what you learn in class in an analysis. Although each milestone provides a framework for you to conduct your analysis, it's possible that you might find the instructions too rigid for your data set. If this is the case, you may deviate from the instructions -- just make sure you're demonstrating a wide range of tools and techniques taught in this class.
+
+# Instructions
+
+**To complete this milestone**, edit [this very `.Rmd` file](https://raw.githubusercontent.com/UBC-STAT/stat545.stat.ubc.ca/master/content/mini-project/mini-project-2.Rmd) directly. Fill in the sections that are tagged with `<!--- start your work here--->`.
+
+**To submit this milestone**, make sure to knit this `.Rmd` file to an `.md` file by changing the YAML output settings from `output: html_document` to `output: github_document`. Commit and push all of your work to your mini-analysis GitHub repository, and tag a release on GitHub. Then, submit a link to your tagged release on canvas.
+
+**Points**: This milestone is worth 50 points: 45 for your analysis, and 5 for overall reproducibility, cleanliness, and coherence of the Github submission. 
+
+**Research Questions**: In Milestone 1, you chose two research questions to focus on. Wherever realistic, your work in this milestone should relate to these research questions whenever we ask for justification behind your work. In the case that some tasks in this milestone don't align well with one of your research questions, feel free to discuss your results in the context of a different research question.
+
+# Learning Objectives
+
+By the end of this milestone, you should:
+
+-   Understand what *tidy* data is, and how to create it using `tidyr`.
+-   Generate a reproducible and clear report using R Markdown.
+-   Manipulating special data types in R: factors and/or dates and times.
+-   Fitting a model object to your data, and extract a result.
+-   Reading and writing data as separate files.
+
+# Setup
+
+Begin by loading your data and the tidyverse package below:
+
+```{r, message = FALSE}
+library(datateachr) # <- might contain the data you picked!
+library(tidyverse)
+```
+
+# Task 1: Process and summarize your data 
+
+From milestone 1, you should have an idea of the basic structure of your dataset (e.g. number of rows and columns, class types, etc.). Here, we will start investigating your data more in-depth using various data manipulation functions. 
+
+### 1.1 (1 point) 
+
+First, write out the 4 research questions you defined in milestone 1 were. This will guide your work through milestone 2:
+
+<!-------------------------- Start your work below ---------------------------->
+**Research Question 1: **How does the original_price of games vary with their release_date and game types? Specifically, is there a trend in the pricing of games over time, and do different game types exhibit distinct pricing patterns?
+
+**Research Question 2: **Is the presence or absence of a discount associated with the release_date of games? 
+
+**Research Question 3: **Is the magnitude of the price_difference between the original and discounted prices correlated with the original_price of games? 
+
+**Research Question 4: **Is there a relationship between the genre of games and their release_date? 
+<!----------------------------------------------------------------------------->
+
+Here, we will investigate your data using various data manipulation and graphing functions.
+
+### 1.2 (8 points)
+
+Now, for each of your four research questions, choose one task from options 1-4 (summarizing), and one other task from 4-8 (graphing). You should have 2 tasks done for each research question (8 total). Make sure it makes sense to do them! (e.g. don't use a numerical variables for a task that needs a categorical variable.). Comment on why each task helps (or doesn't!) answer the corresponding research question.
+
+Ensure that the output of each operation is printed!
+
+Also make sure that you're using dplyr and ggplot2 rather than base R. Outside of this project, you may find that you prefer using base R functions for certain tasks, and that's just fine! But part of this project is for you to practice the tools we learned in class, which is dplyr and ggplot2.
+
+**Summarizing:**
+
+1.  Compute the *range*, *mean*, and *two other summary statistics* of **one numerical variable** across the groups of **one categorical variable** from your data.
+2.  Compute the number of observations for at least one of your categorical variables. Do not use the function `table()`!
+3.  Create a categorical variable with 3 or more groups from an existing numerical variable. You can use this new variable in the other tasks! *An example: age in years into "child, teen, adult, senior".*
+4. Compute the proportion and counts in each category of one categorical variable across the groups of another categorical variable from your data. Do not use the function `table()`!
+
+**Graphing:**
+
+6. Create a graph of your choosing, make one of the axes logarithmic, and format the axes labels so that they are "pretty" or easier to read.
+7. Make a graph where it makes sense to customize the alpha transparency.
+
+Using variables and/or tables you made in one of the "Summarizing" tasks: 
+
+8. Create a graph that has at least two geom layers. 
+9. Create 3 histograms, with each histogram having different sized bins. Pick the "best" one and explain why it is the best.
+
+Make sure it's clear what research question you are doing each operation for!
+
+<!------------------------- Start your work below ----------------------------->
+**Pre-processing**
+To enhance analysis efficiency due to the dataset's extensive volume, we simplified the data by retaining only the primary genre for each game and focusing on the release year, effectively streamlining and compressing the information without losing essential insights. Games with exceptionally high prices were excluded from the analysis to ensure the data's integrity and to focus on more typical pricing trends in the gaming industry.
+```{r}
+# exclude unreasonable price
+filtered_games <- steam_games %>%
+  filter(original_price <= 1000)
+# Modify the 'genre' column to only keep the text before the first comma
+filtered_games$genre <- sapply(strsplit(as.character(filtered_games$genre), ","), `[`, 1)
+head(filtered_games)
+# Extract the year from the 'release_date' column
+filtered_games$release_year <- as.numeric(format(as.Date(filtered_games$release_date, format="%b %d, %Y"), "%Y"))
+```
+**Research Question 1**: How does the original price of games vary with their release date and game type?
+**Option 1 (summarizing)**
+Calculating summary statistics provides a deeper insight into data distribution. This helps identify the pricing characteristics of different game genres and allows for a comprehensive understanding of how game prices have varied across genres.
+Approach:
+Calculate the range, mean, median, and standard deviation of the original price across different game genres.
+```{r}
+summary_by_genre <- filtered_games %>%
+  group_by(genre) %>%
+  summarise(
+    price_range = paste0("[", min(original_price, na.rm = TRUE), ", ", max(original_price, na.rm = TRUE), "]"),
+    mean_price = mean(original_price, na.rm = TRUE),
+    median_price = median(original_price, na.rm = TRUE),
+    sd_price = sd(original_price, na.rm = TRUE)
+  )
+
+print(summary_by_genre)
+```
+**Option 6 (graphing)**
+Graphical representation can help us understand the trend of prices over time intuitively. Given that the price data might span a wide range, using a logarithmic axis can better depict data distribution, especially when outliers or extreme values are present.
+Approach:
+Create a scatter plot displaying how the original price varies over time, with the price axis set to a logarithmic scale.
+```{r}
+# Create a scatter plot displaying original price variation over time 
+ggplot(filtered_games, aes(x=release_year, y=original_price, color=genre)) +
+  geom_point(aes(size=original_price), alpha=0.5) + 
+  scale_y_log10(labels = scales::comma) +
+  labs(title="Original Price Variation Over Time by Genre", x="Release Year", y="Original Price (Log Scale)") +
+  theme_minimal() +
+  theme(legend.position="right")
+
+```
+**Research Question 2**: Is the presence or absence of a discount associated with the release date of games?
+**Option 2 (summarizing)**
+Computing the number of observations for a categorical variable, in this case, the presence or absence of a discount, can give us a clear count of how many games are discounted each year. This will provide a direct measure of the trend of discounts over time.
+Approach:
+Calculate the number of discounted and non-discounted games for each release year.
+```{r}
+# Add a column to indicate if a game has a discount or not
+filtered_games$has_discount <- ifelse(is.na(filtered_games$discount_price), "No", "Yes")
+
+# Calculate the number of discounted and non-discounted games for each release year
+discount_summary <- filtered_games %>%
+  group_by(release_year, has_discount) %>%
+  summarise(count = n())
+
+print(discount_summary)
+```
+**Option 6 (graphing)**
+A graphical representation can offer a visual trend of the proportion of games discounted over time. By plotting this against the release year, we can easily discern any patterns or changes in discounting strategies.
+Approach:
+Create a line plot displaying the proportion of games that received a discount over time, based on their release year.
+```{r}
+# Create a line plot displaying the proportion of games that received a discount over time
+ggplot(discount_summary, aes(x=release_year, y=count, color=has_discount, group=has_discount)) +
+  geom_line() +
+  labs(title="Proportion of Discounted Games Over Time", x="Release Year", y="Number of Games") +
+  theme_minimal() +
+  theme(legend.title=element_blank())
+```
+**Research Question 3**: Is the magnitude of the price difference between the original and discounted prices correlated with the original price of games?
+**Option 1 (summarizing)**
+Calculating summary statistics on the magnitude of the price difference across different original price ranges can provide a quantitative measure of the relationship between the original price and the discount amount.
+Approach:
+Compute the average price difference (original price minus discounted price) for various ranges of original prices.
+```{r}
+# Compute the price difference between original and discounted prices
+filtered_games$price_difference <- filtered_games$original_price - filtered_games$discount_price
+
+# Calculate average price difference for various ranges of original prices
+price_difference_summary <- filtered_games %>%
+  filter(!is.na(price_difference)) %>%
+  group_by(original_price) %>%
+  summarise(average_difference = mean(price_difference, na.rm = TRUE))
+
+print(price_difference_summary)
+```
+**Option 8 (graphing)**
+Visualizing the relationship between two continuous variables is best achieved with a scatter plot. By plotting the original price against the discount magnitude, we can visually inspect any correlation or trend between the two.
+Approach:
+Create a scatter plot where the x-axis represents the original price and the y-axis represents the magnitude of the discount.
+```{r}
+ggplot(filtered_games, aes(x=original_price, y=price_difference)) +
+  geom_hex(bins = 50) + 
+  geom_smooth(method = "lm", se = FALSE, color = "red") +  # Regression trend line
+  labs(title="Original Price vs. Price Difference", x="Original Price", y="Price Difference") +
+  theme_minimal()
+
+```
+**Research Question 4**: Is there a relationship between the genre of games and their release date?
+**Option 1 (summarizing)**
+Calculating the number of games per genre for each release year gives a clear quantitative view of which genres were predominant in which years.
+Approach:
+For each release year, count the number of games for each genre.
+```{r}
+# Calculate the number of games of each genre for each release year
+genre_year_summary <- filtered_games %>%
+  group_by(release_year, genre) %>%
+  summarise(count = n())
+print(genre_year_summary)
+```
+**Option 8 (graphing)**
+A visual representation allows for an intuitive view of the trending genres over time. For this purpose, a stacked bar chart is apt as it can showcase the quantity of different genres for each year.
+Approach:
+Create a stacked bar chart that displays the number of games per genre for each release year.
+```{r}
+# Create a stacked bar plot displaying the number of games of each genre over time
+ggplot(genre_year_summary, aes(x=as.factor(release_year), y=count, fill=genre)) +
+  geom_bar(stat="identity") +
+  labs(title="Number of Games by Genre Over Time", x="Release Year", y="Number of Games") +
+  theme_minimal() +
+  theme(axis.text.x=element_text(angle=45, hjust=1))
+
+```
+
+
+<!----------------------------------------------------------------------------->
+
+### 1.3 (2 points)
+
+Based on the operations that you've completed, how much closer are you to answering your research questions? Think about what aspects of your research questions remain unclear. Can your research questions be refined, now that you've investigated your data a bit more? Which research questions are yielding interesting results?
+
+<!------------------------- Write your answer here ---------------------------->
+Based on the analyses conducted, I believe we have obtained pertinent answers to all our research questions.
+For Research Question 1, it's evident that as the years have progressed, the prices of games have surged. Furthermore, there's a noticeable correlation between the genre of games and their prices. In recent years, more expensive games tend to belong to similar genres, suggesting a trend in the market's preference or production costs associated with these genres.Regarding Research Question 2, our findings are quite enlightening. The peaks of games with and without discounts occurring in the same years can lead us to deduce that games are likely to be offered at a discount after being on the market for a certain duration. This observation aligns with the typical promotional strategies employed by game developers or platforms to rejuvenate the sales of older titles. As for Research Question 3, the correlation between a game's original price and the magnitude of its discount is insightful. While it's logical to see that pricier games have more substantial absolute discounts, the trend doesn't strictly follow a linear y=x relationship. This suggests that while more expensive games are discounted, their relative discount rate isn't necessarily higher. This could be indicative of a strategic balance that game developers strike: enticing potential buyers with discounts while ensuring optimal profits. Lastly, in Research Question 4, the data showcases an exponential increase in the number of games being released annually. Genres like action and adventure are notably at the forefront of this surge. The increasing dominance of these genres in the gaming market might be indicative of evolving player preferences or the profitability of these genres.
+In conclusion, the analyses have furnished us with valuable insights into the gaming industry's trends, from pricing strategies to genre preferences. These findings not only provide a snapshot of the current state but also hint at the industry's possible future trajectory.
+
+<!----------------------------------------------------------------------------->
+
+# Task 2: Tidy your data 
+
+In this task, we will do several exercises to reshape our data. The goal here is to understand how to do this reshaping with the `tidyr` package.
+
+A reminder of the definition of *tidy* data:
+
+-   Each row is an **observation**
+-   Each column is a **variable**
+-   Each cell is a **value**
+
+### 2.1 (2 points)
+
+Based on the definition above, can you identify if your data is tidy or untidy? Go through all your columns, or if you have \>8 variables, just pick 8, and explain whether the data is untidy or tidy.
+
+<!--------------------------- Start your work below --------------------------->
+**check if tidy**: By using glimpse() function and then I select 8 col.
+```{r}
+glimpse(steam_games)
+selected_columns <- filtered_games %>% select(id, types, genre, release_date, developer, publisher, original_price, discount_price)
+glimpse(selected_columns)
+```
+
+If the dataset have missing values, it is untiy. Check my dataset by this rule.
+
+```{r}
+missing_value <- sum(is.na(selected_columns))
+if (missing_value > 0) {
+  cat("Missing values exist! The dataset is untidy")
+} else {
+  cat("No missing values found!")
+}
+```
+<!----------------------------------------------------------------------------->
+
+### 2.2 (4 points)
+
+Now, if your data is tidy, untidy it! Then, tidy it back to it's original state.
+
+If your data is untidy, then tidy it! Then, untidy it back to it's original state.
+
+Be sure to explain your reasoning for this task. Show us the "before" and "after".
+
+<!--------------------------- Start your work below --------------------------->
+**Original data**
+```{r}
+missing_value <- sum(is.na(selected_columns))
+if (missing_value > 0) {
+  cat("Missing values exist! The dataset is untidy")
+} else {
+  cat("No missing values found!")
+}
+```
+**Tidy data**
+```{r}
+NA_columns <- selected_columns %>%
+  summarise_all(~sum(is.na(.))) %>%
+  as.logical()
+names(selected_columns)[NA_columns]
+backup_data <- selected_columns
+selected_columns_clean <- selected_columns %>% drop_na()
+```
+**Check**
+```{r}
+missing_value <- sum(is.na(selected_columns_clean))
+if (missing_value > 0) {
+  cat("Missing values exist! The dataset is untidy")
+} else {
+  cat("No missing values found!")
+}
+```
+**Restore data**
+```{r}
+restored_data <- backup_data
+```
+**Check**
+```{r}
+missing_value <- sum(is.na(restored_data))
+if (missing_value > 0) {
+  cat("Missing values exist! The dataset is untidy")
+} else {
+  cat("No missing values found!")
+}
+```
+
+<!----------------------------------------------------------------------------->
+
+### 2.3 (4 points)
+
+Now, you should be more familiar with your data, and also have made progress in answering your research questions. Based on your interest, and your analyses, pick 2 of the 4 research questions to continue your analysis in the remaining tasks:
+
+<!-------------------------- Start your work below ---------------------------->
+
+1.  *Research Question 1*: Is the presence or absence of a discount associated with the release_date of games?
+2.  *Research Question 2*: Is there a relationship between the genre of games and their release_date?
+
+<!----------------------------------------------------------------------------->
+
+Explain your decision for choosing the above two research questions.
+
+<!--------------------------- Start your work below --------------------------->
+I chose these two questions because they convey a wealth of information within a specific time frame. For Research Question 1, the presence or absence of discounts experienced a significant fluctuation between the years 2010 and 2023. Similarly, for Research Question 2, certain game genres have seen a dramatic increase in recent years.
+<!----------------------------------------------------------------------------->
+
+Now, try to choose a version of your data that you think will be appropriate to answer these 2 questions. Use between 4 and 8 functions that we've covered so far (i.e. by filtering, cleaning, tidy'ing, dropping irrelevant columns, etc.).
+
+(If it makes more sense, then you can make/pick two versions of your data, one for each research question.) 
+
+<!--------------------------- Start your work below --------------------------->
+```{r}
+# Filtering
+relevant_data <- filtered_games %>% filter(release_year >= 2010 & release_year <= 2023)
+relevant_data$genre <- sapply(strsplit(as.character(relevant_data$genre), ","), `[`, 1)
+relevant_data$release_year <- as.numeric(format(as.Date(relevant_data$release_date, format="%b %d, %Y"), "%Y"))
+# Creating a New Column
+relevant_data$has_discount <- ifelse(is.na(relevant_data$discount_price), 0, 1)
+
+# Cleaning
+relevant_data_clean <- relevant_data %>% drop_na(c(release_year, genre, has_discount))
+
+# Dropping Irrelevant Columns
+selected_data <- relevant_data_clean %>% select(id, release_year, genre, original_price, discount_price, has_discount)
+
+# Tidying
+selected_data$genre <- str_extract(selected_data$genre, "^[^,]+")
+
+# Grouping and Summarizing
+genre_year_summary <- selected_data %>% group_by(release_year, genre) %>% summarise(count = n(), .groups = "drop")
+
+selected_data
+
+```
+
+# Task 3: Modelling
+
+## 3.0 (no points)
+
+Pick a research question from 1.2, and pick a variable of interest (we'll call it "Y") that's relevant to the research question. Indicate these.
+
+<!-------------------------- Start your work below ---------------------------->
+
+**Research Question**: Is there a relationship between the genre of games and their release_date? 
+
+**Variable of interest**: genre
+
+<!----------------------------------------------------------------------------->
+
+## 3.1 (3 points)
+
+Fit a model or run a hypothesis test that provides insight on this variable with respect to the research question. Store the model object as a variable, and print its output to screen. We'll omit having to justify your choice, because we don't expect you to know about model specifics in STAT 545.
+
+-   **Note**: It's OK if you don't know how these models/tests work. Here are some examples of things you can do here, but the sky's the limit.
+
+    -   You could fit a model that makes predictions on Y using another variable, by using the `lm()` function.
+    -   You could test whether the mean of Y equals 0 using `t.test()`, or maybe the mean across two groups are different using `t.test()`, or maybe the mean across multiple groups are different using `anova()` (you may have to pivot your data for the latter two).
+    -   You could use `lm()` to test for significance of regression coefficients.
+
+<!-------------------------- Start your work below ---------------------------->
+Since the genre is a categorical variable with potentially many levels, I want to use an ANOVA to check if there's a significant difference in the release years across different genres.
+```{r}
+genre_model <- lm(release_year ~ genre, data = selected_data)
+anova_genre <- anova(genre_model)
+print(anova_genre)
+```
+<!----------------------------------------------------------------------------->
+
+## 3.2 (3 points)
+
+Produce something relevant from your fitted model: either predictions on Y, or a single value like a regression coefficient or a p-value.
+
+-   Be sure to indicate in writing what you chose to produce.
+-   Your code should either output a tibble (in which case you should indicate the column that contains the thing you're looking for), or the thing you're looking for itself.
+-   Obtain your results using the `broom` package if possible. If your model is not compatible with the broom function you're needing, then you can obtain your results by some other means, but first indicate which broom function is not compatible.
+
+<!-------------------------- Start your work below ---------------------------->
+*the coefficients of the linear model *
+```{r}
+
+library(broom)
+tidied_output <- tidy(genre_model)
+tidied_output
+
+y_data <- augment(genre_model)
+head(y_data)
+```
+<!----------------------------------------------------------------------------->
+
+# Task 4: Reading and writing data
+
+Get set up for this exercise by making a folder called `output` in the top level of your project folder / repository. You'll be saving things there.
+
+## 4.1 (3 points)
+
+Take a summary table that you made from Task 1, and write it as a csv file in your `output` folder. Use the `here::here()` function.
+
+-   **Robustness criteria**: You should be able to move your Mini Project repository / project folder to some other location on your computer, or move this very Rmd file to another location within your project repository / folder, and your code should still work.
+-   **Reproducibility criteria**: You should be able to delete the csv file, and remake it simply by knitting this Rmd file.
+
+<!-------------------------- Start your work below ---------------------------->
+```{r}
+
+library(here)
+file_path <- here("output", "summary_table.csv")
+write.csv(summary_by_genre, file = file_path, row.names = FALSE)
+
+```
+<!----------------------------------------------------------------------------->
+
+## 4.2 (3 points)
+
+Write your model object from Task 3 to an R binary file (an RDS), and load it again. Be sure to save the binary file in your `output` folder. Use the functions `saveRDS()` and `readRDS()`.
+
+-   The same robustness and reproducibility criteria as in 4.1 apply here.
+
+<!-------------------------- Start your work below ---------------------------->
+```{r}
+#save model
+file_path <- here("output", "genre_model.rds")
+saveRDS(genre_model, file = file_path)
+
+#load model
+genre_model <- readRDS(file_path)
+```
+<!----------------------------------------------------------------------------->
+
+# Overall Reproducibility/Cleanliness/Coherence Checklist 
+
+Here are the criteria we're looking for.
+
+## Coherence (0.5 points)
+
+The document should read sensibly from top to bottom, with no major continuity errors. 
+
+The README file should still satisfy the criteria from the last milestone, i.e. it has been updated to match the changes to the repository made in this milestone. 
+
+## File and folder structure (1 points)
+
+You should have at least three folders in the top level of your repository: one for each milestone, and one output folder. If there are any other folders, these are explained in the main README.
+
+Each milestone document is contained in its respective folder, and nowhere else.
+
+Every level-1 folder (that is, the ones stored in the top level, like "Milestone1" and "output") has a `README` file, explaining in a sentence or two what is in the folder, in plain language (it's enough to say something like "This folder contains the source for Milestone 1").
+
+## Output (1 point)
+
+All output is recent and relevant:
+
+-   All Rmd files have been `knit`ted to their output md files. 
+-   All knitted md files are viewable without errors on Github. Examples of errors: Missing plots, "Sorry about that, but we can't show files that are this big right now" messages, error messages from broken R code
+-   All of these output files are up-to-date -- that is, they haven't fallen behind after the source (Rmd) files have been updated.
+-   There should be no relic output files. For example, if you were knitting an Rmd to html, but then changed the output to be only a markdown file, then the html file is a relic and should be deleted.
+
+Our recommendation: delete all output files, and re-knit each milestone's Rmd file, so that everything is up to date and relevant.
+
+## Tagged release (0.5 point)
+
+You've tagged a release for Milestone 2. 
+
+### Attribution
+
+Thanks to Victor Yuan for mostly putting this together.
