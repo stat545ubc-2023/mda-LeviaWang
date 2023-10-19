@@ -14,8 +14,8 @@
 [Mini Data-Analysis Deliverable 1](https://stat545.stat.ubc.ca/mini-project/mini-project-1/)
 
 ## **Files in the Repository**
-*README.md
-*mini-project-1.md
+* README.md
+* mini-project-1.md
 md file for milestone 1
-*mini-project-1.rmd
+* mini-project-1.rmd
 rmd file for milestone 1
