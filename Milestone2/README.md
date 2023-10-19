@@ -16,7 +16,11 @@
 
 ## **Files in the Repository**
 * README.md
+
 * mini-project-2.md
-md file for milestone 2
+  
+  md file for milestone 2
+  
 * mini-project-2.rmd
-rmd file for milestone 2
+
+  rmd file for milestone 2
