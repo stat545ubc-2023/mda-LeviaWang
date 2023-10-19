@@ -12,13 +12,10 @@
 ## **Project details and Course Info**
 
 [Mini Data-Analysis Deliverable 1](https://stat545.stat.ubc.ca/mini-project/mini-project-1/)
-[Mini Data-Analysis Deliverable 2](https://stat545.stat.ubc.ca/mini-project/mini-project-2/)
 
 ## **Files in the Repository**
 *README.md
-*Milestone1
-Inclue all files for milestone 1
-*Milestone2
-Inclue main files for milestone 2
-*output
-A csv file stores a summary table and the genre_model from milestone2 
+*mini-project-1.md
+md file for milestone 1
+*mini-project-1.rmd
+rmd file for milestone 1
