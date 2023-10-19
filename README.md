@@ -16,9 +16,15 @@
 
 ## **Files in the Repository**
 * README.md
+
 * Milestone1
+
 Inclue all files for milestone 1
+
 * Milestone2
+
 Inclue main files for milestone 2
+
 * output
+
 A csv file stores a summary table and the genre_model from milestone2 
