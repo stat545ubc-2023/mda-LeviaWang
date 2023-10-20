@@ -1,7 +1,7 @@
 
 ## **Project Description**
 
-"This is the mda-milestone_1 project by Yuehao Wang. Within this repository, you'll find the initial phase of my mini data analysis, specifically milestone_1. I delved into four datasets and ultimately selected steam_games for further investigation. Through analyzing its data, my objective is to identify variables that have an impact on game_price."
+"This is the mda project by Yuehao Wang. I delved into four datasets and ultimately selected steam_games for further investigation. Through analyzing its data, my objective is to identify variables that have an impact on game_price."
 
 ## **Engage with the repository**
 
